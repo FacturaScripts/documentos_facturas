@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es" >
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+   <title>{$fsc->page->title} &lsaquo; {$fsc->empresa->nombre}</title>
+   <meta name="description" content="FacturaScripts es un software de facturación y contabilidad para pymes. Es software libre bajo licencia GNU/AGPL." />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <link rel="shortcut icon" href="view/img/favicon.ico" />
+   <link rel="stylesheet" href="{$fsc->user->css}" />
+   <link rel="stylesheet" href="view/css/datepicker.css" />
+   <link rel="stylesheet" href="view/css/custom.css" />
+   <script type="text/javascript" src="view/js/jquery-2.1.1.min.js"></script>
+   <script type="text/javascript" src="view/js/bootstrap.min.js"></script>
+   <script type="text/javascript" src="view/js/bootstrap-datepicker.js" charset="UTF-8"></script>
+   <script type="text/javascript" src="view/js/jquery.autocomplete.min.js"></script>
+   <script type="text/javascript" src="view/js/base.js"></script>
+   <script type="text/javascript">
+      function show_precio(precio)
+      {
+         {if condition="FS_POS_DIVISA=='right'"}
+         return number_format(precio, {#FS_NF0#}, '{#FS_NF1#}', '{#FS_NF2#}')+' {$fsc->simbolo_divisa()}';
+         {else}
+         return '{$fsc->simbolo_divisa()}'+number_format(precio, {#FS_NF0#}, '{#FS_NF1#}', '{#FS_NF2#}');
+         {/if}
+      }
+      function show_numero(numero)
+      {
+         return number_format(numero, {#FS_NF0#}, '{#FS_NF1#}', '{#FS_NF2#}');
+      }
+      function delete_documento(name)
+      {
+         if( confirm("¿Realmente desea eliminar "+name+"?") )
+            window.location.href = "{$fsc->url()}&delete="+name;
+      }
+   </script>
+   {loop="$fsc->extensions"}
+      {if condition="$value->type=='head'"}{$value->text}{/if}
+   {/loop}
+</head>
+<body>
+   {if="$fsc->get_errors()"}
+   <div class="alert alert-danger hidden-print">
+      <ul>{loop="$fsc->get_errors()"}<li>{$value}</li>{/loop}</ul>
+   </div>
+   {/if}
+   
+   {if="$fsc->get_messages()"}
+   <div class="alert alert-success hidden-print">
+      <ul>{loop="$fsc->get_messages()"}<li>{$value}</li>{/loop}</ul>
+   </div>
+   {/if}
+   
+   {if="$fsc->get_advices()"}
+   <div class="alert alert-info hidden-print">
+      <ul>{loop="$fsc->get_advices()"}<li>{$value}</li>{/loop}</ul>
+   </div>
+   {/if}
+   
+   <div class="container-fluid">
+      <div class="row" style="margin-top: 15px; margin-bottom: 15px;">
+         {loop="$fsc->documentos"}
+         <div class="col-sm-4">
+            <div class="btn-group">
+               <a href="{$value['fullname']}" target="_blank" class="btn btn-bg btn-default">
+                  <span class="glyphicon glyphicon-file" aria-hidden="true"></span> &nbsp; {$value['name']}
+               </a>
+               <a href="#" class="btn btn-bg btn-default" title="Eliminar" onclick="delete_documento('{$value['name']}')">
+                  <span class="glyphicon glyphicon-trash"></span>
+               </a>
+            </div>
+            <p class="help-block">Tamaño: {$value['filesize']}. Fecha: {$value['date']}</p>
+         </div>
+         {/loop}
+      </div>
+      <div class="row">
+         <div class="col-sm-4">
+            <form enctype="multipart/form-data" action="{$fsc->url()}" method="post">
+               <input type="hidden" name="upload" value="TRUE"/>
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Añadir un documento</h3>
+                  </div>
+                  <div class="panel-body">
+                     <div class="form-group">
+                        <input class="form-control" name="fdocumento" type="file"/>
+                     </div>
+                     <button class="btn btn-sm btn-primary" type="submit" onclick="this.disabled=true;this.form.submit();">
+                        <span class="glyphicon glyphicon-floppy-disk"></span> &nbsp; Guardar
+                     </button>
+                  </div>
+               </div>
+            </form>
+         </div>
+      </div>
+   </div>
+</body>
+</html>
