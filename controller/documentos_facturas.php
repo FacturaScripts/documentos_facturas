@@ -68,7 +68,7 @@ class documentos_facturas extends fs_controller
             {
                if( unlink('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id'].'/'.$_GET['delete']) )
                {
-                  $this->new_error_msg('Archivo '.$_GET['delete'].' eliminado correctamente.');
+                  $this->new_message('Archivo '.$_GET['delete'].' eliminado correctamente.');
                }
                else
                   $this->new_error_msg('Error al eliminar el archivo '.$_GET['delete'].'.');
