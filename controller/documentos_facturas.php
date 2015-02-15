@@ -89,7 +89,7 @@ class documentos_facturas extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'ventas_factura',
               'type' => 'tab',
-              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span><span class="hidden-xs"> &nbsp; Documentos</span>',
               'params' => '&folder=facturascli'
           ),
           array(
@@ -97,7 +97,7 @@ class documentos_facturas extends fs_controller
               'page_from' => __CLASS__,
               'page_to' => 'compras_factura',
               'type' => 'tab',
-              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span><span class="hidden-xs"> &nbsp; Documentos</span>',
               'params' => '&folder=facturasprov'
           ),
       );
