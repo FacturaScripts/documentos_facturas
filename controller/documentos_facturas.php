@@ -133,7 +133,7 @@ class documentos_facturas extends fs_controller
                    'name' => (string)$f,
                    'fullname' => $folder.'/'.$f,
                    'filesize' => $this->human_filesize( filesize(getcwd().'/'.$folder.'/'.$f) ),
-                   'date' => date ("d-m-Y H:i:s.", filemtime(getcwd().'/'.$folder.'/'.$f) )
+                   'date' => date ("d-m-Y H:i:s", filemtime(getcwd().'/'.$folder.'/'.$f) )
                );
             }
          }
