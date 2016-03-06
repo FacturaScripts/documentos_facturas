@@ -2,7 +2,7 @@
 
 /*
  * This file is part of FacturaSctipts
- * Copyright (C) 2015  Carlos Garcia Gomez  neorazorx@gmail.com
+ * Copyright (C) 2015-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+require_model('documento_factura.php');
 
 /**
  * Description of documentos_facturas
@@ -35,49 +37,85 @@ class documentos_facturas extends fs_controller
    protected function private_core()
    {
       $this->share_extension();
+      
+      $this->check_documentos();
       $this->documentos = array();
       
       if( isset($_GET['folder']) AND isset($_GET['id']) )
       {
-         if( !file_exists('tmp/'.FS_TMP_NAME.'documentos_facturas') )
-         {
-            mkdir('tmp/'.FS_TMP_NAME.'documentos_facturas');
-         }
-         
-         if( !file_exists('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder']) )
-         {
-            mkdir('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder']);
-         }
-         
          if( isset($_POST['upload']) )
          {
-            if( is_uploaded_file($_FILES['fdocumento']['tmp_name']) )
-            {
-               if( !file_exists('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id']) )
-               {
-                  mkdir('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id']);
-               }
-               
-               copy($_FILES['fdocumento']['tmp_name'], "tmp/".FS_TMP_NAME."documentos_facturas/".$_GET['folder'].'/'.$_GET['id'].'/'.$_FILES['fdocumento']['name']);
-               $this->new_message('Documentos añadido correctamente.');
-            }
+            $this->upload_documento();
          }
          else if( isset($_GET['delete']) )
          {
-            if( file_exists('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id'].'/'.$_GET['delete']) )
-            {
-               if( unlink('tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id'].'/'.$_GET['delete']) )
-               {
-                  $this->new_message('Archivo '.$_GET['delete'].' eliminado correctamente.');
-               }
-               else
-                  $this->new_error_msg('Error al eliminar el archivo '.$_GET['delete'].'.');
-            }
-            else
-               $this->new_error_msg('Archivo no encontrado.');
+            $this->delete_documento();
          }
          
          $this->documentos = $this->get_documentos();
+      }
+   }
+   
+   private function upload_documento()
+   {
+      if( is_uploaded_file($_FILES['fdocumento']['tmp_name']) )
+      {
+         $nuevon = $this->random_string(6).'_'.$_FILES['fdocumento']['name'];
+         
+         if( copy($_FILES['fdocumento']['tmp_name'], 'documentos/'.$nuevon) )
+         {
+            $doc = new documento_factura();
+            $doc->ruta = 'documentos/'.$nuevon;
+            $doc->nombre = $_FILES['fdocumento']['name'];
+            $doc->tamano = filesize(getcwd().'/'.$doc->ruta);
+            $doc->usuario = $this->user->nick;
+            
+            if($_GET['folder'] == 'facturascli')
+            {
+               $doc->idfactura = $_GET['id'];
+            }
+            else if($_GET['folder'] == 'facturasprov')
+            {
+               $doc->idfacturaprov = $_GET['id'];
+            }
+            
+            if( $doc->save() )
+            {
+               $this->new_message('Documentos añadido correctamente.');
+            }
+            else
+            {
+               $this->new_error_msg('Error al asignar el archivo.');
+               @unlink($doc->ruta);
+            }
+         }
+         else
+         {
+            $this->new_error_msg('Error al mover el archivo.');
+         }
+      }
+   }
+   
+   private function delete_documento()
+   {
+      $doc0 = new documento_factura();
+      
+      $documento = $doc0->get($_GET['delete']);
+      if($documento)
+      {
+         if( $documento->delete() )
+         {
+            $this->new_message('Documento eliminado correctamente.');
+            @unlink($documento->ruta);
+         }
+         else
+         {
+            $this->new_error_msg('Error al eliminar el documento.');
+         }
+      }
+      else
+      {
+         $this->new_error_msg('Documento no encontrado.');
       }
    }
    
@@ -120,32 +158,69 @@ class documentos_facturas extends fs_controller
    
    private function get_documentos()
    {
-      $doclist = array();
-      $folder = 'tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id'];
-      
-      if( file_exists($folder) )
+      $doc = new documento_factura();
+      if($_GET['folder'] == 'facturascli')
       {
-         foreach( scandir($folder) as $f )
+         return $doc->all_from('idfactura', $_GET['id']);
+      }
+      else if($_GET['folder'] == 'facturasprov')
+      {
+         return $doc->all_from('idfacturaprov', $_GET['id']);
+      }
+      else
+      {
+         return array();
+      }
+   }
+   
+   private function check_documentos()
+   {
+      if( !file_exists('documentos') )
+      {
+         mkdir('documentos');
+      }
+      
+      if( isset($_GET['folder']) AND isset($_GET['id']) )
+      {
+         /// comprobamos la antigua rura
+         $folder = 'tmp/'.FS_TMP_NAME.'documentos_facturas/'.$_GET['folder'].'/'.$_GET['id'];
+         if( file_exists($folder) )
          {
-            if($f != '.' AND $f != '..')
+            foreach( scandir($folder) as $f )
             {
-               $doclist[] = array(
-                   'name' => (string)$f,
-                   'fullname' => $folder.'/'.$f,
-                   'filesize' => $this->human_filesize( filesize(getcwd().'/'.$folder.'/'.$f) ),
-                   'date' => date ("d-m-Y H:i:s", filemtime(getcwd().'/'.$folder.'/'.$f) )
-               );
+               if($f != '.' AND $f != '..')
+               {
+                  /// movemos a la nueva ruta
+                  $nuevon = $this->random_string(6).'_'.(string)$f;
+                  if( rename($folder.'/'.$f, 'documentos/'.$nuevon) )
+                  {
+                     $doc = new documento_factura();
+                     $doc->ruta = 'documentos/'.$nuevon;
+                     $doc->nombre = (string)$f;
+                     $doc->tamano = filesize(getcwd().'/'.$doc->ruta);
+                     $doc->usuario = $this->user->nick;
+                     
+                     if($_GET['folder'] == 'facturascli')
+                     {
+                        $doc->idfactura = $_GET['id'];
+                     }
+                     else if($_GET['folder'] == 'facturasprov')
+                     {
+                        $doc->idfacturaprov = $_GET['id'];
+                     }
+                     
+                     if( !$doc->save() )
+                     {
+                        $this->new_error_msg('Error al mover el archivo.');
+                     }
+                  }
+                  else
+                  {
+                     $this->new_error_msg('Error al mover el archivo a la nueva ruta.');
+                  }
+               }
             }
          }
       }
-      
-      return $doclist;
-   }
-   
-   private function human_filesize($bytes, $decimals = 2)
-   {
-      $sz = 'BKMGTP';
-      $factor = floor((strlen($bytes) - 1) / 3);
-      return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
    }
 }

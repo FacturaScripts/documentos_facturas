@@ -1,25 +1,64 @@
 {include="header2"}
 
-<div class="container-fluid">
-   <div class="row" style="margin-top: 15px; margin-bottom: 15px;">
-      {loop="$fsc->documentos"}
-         <div class="col-sm-4">
-            <div class="btn-group">
-               <a href="{$value['fullname']}" target="_blank" class="btn btn-bg btn-default">
-                  <span class="glyphicon glyphicon-file" aria-hidden="true"></span> &nbsp; {$value['name']}
-               </a>
-               <a href="#" class="btn btn-bg btn-default" title="Eliminar" onclick="delete_documento('{$value['name']}')">
-                  <span class="glyphicon glyphicon-trash"></span>
-               </a>
-            </div>
-            <p class="help-block">
-               Tamaño: {$value['filesize']} &nbsp;
-               <span class="glyphicon glyphicon-calendar"></span> {$value['date']}
-            </p>
-         </div>
-      {/loop}
-   </div>
+<script type="text/javascript">
+   function delete_documento(id,name)
+   {
+      if( confirm("¿Realmente desea eliminar "+name+"?") )
+      {
+         window.location.href = "{$fsc->url()}&delete="+id;
+      }
+      
+      return false;
+   }
+</script>
+
+<div class="container-fluid" style="margin-top: 15px;">
    <div class="row">
+      <div class="col-sm-8">
+         <div class="table-responsive">
+            <table class="table table-hover">
+               <thead>
+                  <tr>
+                     <th>Archivo</th>
+                     <th class="text-right">Tamaño</th>
+                     <th class="text-right">Fecha</th>
+                     <th class="text-right hidden-sm">Hora</th>
+                     <th class="text-right">Usuario</th>
+                     <th></th>
+                  </tr>
+               </thead>
+               {loop="$fsc->documentos"}
+               <tr{if="!$value->file_exists()"} class="danger"{/if}>
+                  <td>
+                     {if="$value->file_exists()"}
+                     <span class="glyphicon glyphicon-file" aria-hidden="true"></span> &nbsp;
+                     {else}
+                     <span class="glyphicon glyphicon-remove" aria-hidden="true" title="No se encuentra el archivo"></span> &nbsp;
+                     {/if}
+                     <a href="{$value->ruta}" target="_blank">{$value->nombre}</a>
+                  </td>
+                  <td class="text-right">{$value->tamano()}</td>
+                  <td class="text-right">{$value->fecha}</td>
+                  <td class="text-right">{$value->hora}</td>
+                  <td class="text-right">{$value->usuario}</td>
+                  <td class="text-right">
+                     <a href="#" title="Eliminar el archivo" onclick="return delete_documento('{$value->id}','{$value->nombre}');">
+                        <span class="glyphicon glyphicon-trash"></span>
+                     </a>
+                  </td>
+               </tr>
+               {else}
+               <tr class="warning">
+                  <td colspan="6">Sin resultados.</td>
+               </tr>
+               {/loop}
+            </table>
+         </div>
+         <p class="help-block">
+            Los archivos se almacenan en la carpeta documentos de FacturaScripts.
+            Recuerda hacer copias de seguridad periódicamente.
+         </p>
+      </div>
       <div class="col-sm-4">
          <form enctype="multipart/form-data" action="{$fsc->url()}" method="post" class="form">
             <input type="hidden" name="upload" value="TRUE"/>
