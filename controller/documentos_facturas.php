@@ -18,7 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_model('albaran_cliente.php');
+require_model('albaran_proveedor.php');
 require_model('documento_factura.php');
+require_model('factura_cliente.php');
+require_model('factura_proveedor.php');
+require_model('pedido_cliente.php');
+require_model('pedido_proveedor.php');
+require_model('presupuesto_cliente.php');
 
 /**
  * Description of documentos_facturas
@@ -74,9 +81,29 @@ class documentos_facturas extends fs_controller
             {
                $doc->idfactura = $_GET['id'];
             }
+            else if($_GET['folder'] == 'albaranescli')
+            {
+               $doc->idalbaran = $_GET['id'];
+            }
+            else if($_GET['folder'] == 'pedidoscli')
+            {
+               $doc->idpedido = $_GET['id'];
+            }
+            else if($_GET['folder'] == 'presupuestoscli')
+            {
+               $doc->idpresupuesto = $_GET['id'];
+            }
             else if($_GET['folder'] == 'facturasprov')
             {
                $doc->idfacturaprov = $_GET['id'];
+            }
+            else if($_GET['folder'] == 'albaranesprov')
+            {
+               $doc->idalbaranprov = $_GET['id'];
+            }
+            else if($_GET['folder'] == 'pedidosprov')
+            {
+               $doc->idpedidoprov = $_GET['id'];
             }
             
             if( $doc->save() )
@@ -131,12 +158,52 @@ class documentos_facturas extends fs_controller
               'params' => '&folder=facturascli'
           ),
           array(
+              'name' => 'documentos_albaranescli',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_albaran',
+              'type' => 'tab',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'params' => '&folder=albaranescli'
+          ),
+          array(
+              'name' => 'documentos_pedidoscli',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_pedido',
+              'type' => 'tab',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'params' => '&folder=pedidoscli'
+          ),
+          array(
+              'name' => 'documentos_presupuestoscli',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_presupuesto',
+              'type' => 'tab',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'params' => '&folder=presupuestoscli'
+          ),
+          array(
               'name' => 'documentos_facturasprov',
               'page_from' => __CLASS__,
               'page_to' => 'compras_factura',
               'type' => 'tab',
               'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
               'params' => '&folder=facturasprov'
+          ),
+          array(
+              'name' => 'documentos_albaranesprov',
+              'page_from' => __CLASS__,
+              'page_to' => 'compras_albaran',
+              'type' => 'tab',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'params' => '&folder=albaranesprov'
+          ),
+          array(
+              'name' => 'documentos_pedidosprov',
+              'page_from' => __CLASS__,
+              'page_to' => 'compras_pedido',
+              'type' => 'tab',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'params' => '&folder=pedidosprov'
           ),
       );
       foreach($extensiones as $ext)
@@ -161,11 +228,92 @@ class documentos_facturas extends fs_controller
       $doc = new documento_factura();
       if($_GET['folder'] == 'facturascli')
       {
+         /// comprobamos los albaranes relacionados con esta factura
+         $alba = new albaran_cliente();
+         foreach($alba->all_from_factura($_GET['id']) as $alb)
+         {
+            foreach( $doc->all_from('idalbaran', $alb->idalbaran) as $d )
+            {
+               $d->idfactura = $_GET['id'];
+               $d->save();
+            }
+         }
+         
          return $doc->all_from('idfactura', $_GET['id']);
+      }
+      else if($_GET['folder'] == 'albaranescli')
+      {
+         if( class_exists('pedido_cliente') )
+         {
+            /// comprobamos los pedidos relacionados con este albarán
+            $pedi = new pedido_cliente();
+            foreach($pedi->all_from_albaran($_GET['id']) as $ped)
+            {
+               foreach( $doc->all_from('idpedido', $ped->idpedido) as $d )
+               {
+                  $d->idalbaran = $_GET['id'];
+                  $d->save();
+               }
+            }
+         }
+         
+         return $doc->all_from('idalbaran', $_GET['id']);
+      }
+      else if($_GET['folder'] == 'pedidoscli')
+      {
+         /// comprobamos los presupuestos relacionados con este pedido
+         $presu = new presupuesto_cliente();
+         foreach($presu->all_from_pedido($_GET['id']) as $pre)
+         {
+            foreach( $doc->all_from('idpresupuesto', $pre->idpresupuesto) as $d )
+            {
+               $d->idpedido = $_GET['id'];
+               $d->save();
+            }
+         }
+         
+         return $doc->all_from('idpedido', $_GET['id']);
+      }
+      else if($_GET['folder'] == 'presupuestoscli')
+      {
+         return $doc->all_from('idpresupuesto', $_GET['id']);
       }
       else if($_GET['folder'] == 'facturasprov')
       {
+         /// comprobamos los albaranes relacionados con esta factura
+         $alba = new albaran_proveedor();
+         foreach($alba->all_from_factura($_GET['id']) as $alb)
+         {
+            foreach( $doc->all_from('idalbaranprov', $alb->idalbaran) as $d )
+            {
+               $d->idfacturaprov = $_GET['id'];
+               $d->save();
+            }
+         }
+         
          return $doc->all_from('idfacturaprov', $_GET['id']);
+      }
+      else if($_GET['folder'] == 'albaranesprov')
+      {
+         if( class_exists('pedido_proveedor') )
+         {
+            /// comprobamos los pedidos relacionados con este albarán
+            $pedi = new pedido_proveedor();
+            foreach($pedi->all_from_albaran($_GET['id']) as $ped)
+            {
+               foreach( $doc->all_from('idpedidoprov', $ped->idpedido) as $d )
+               {
+                  $d->idalbaranprov = $_GET['id'];
+                  $d->save();
+               }
+            }
+         }
+         
+         return $doc->all_from('idalbaranprov', $_GET['id']);
+      }
+      else if($_GET['folder'] == 'pedidosprov')
+      {
+         return $doc->all_from('idpedidoprov', $_GET['id']);
       }
       else
       {

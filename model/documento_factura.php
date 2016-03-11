@@ -180,6 +180,12 @@ class documento_factura extends fs_model
       return $this->db->exec("DELETE FROM documentosfac WHERE id = ".$this->var2str($this->id).";");
    }
    
+   /**
+    * Devuelve todos los documentos relacionados.
+    * @param type $tipo
+    * @param type $id
+    * @return \documento_factura
+    */
    public function all_from($tipo, $id)
    {
       $lista = array();
