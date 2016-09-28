@@ -36,6 +36,7 @@ class documento_factura extends fs_model
    public $idalbaran;
    public $idpedido;
    public $idpresupuesto;
+   public $idservicio;
    public $idfacturaprov;
    public $idalbaranprov;
    public $idpedidoprov;
@@ -58,6 +59,7 @@ class documento_factura extends fs_model
          $this->idalbaran = $this->intval($d['idalbaran']);
          $this->idpedido = $this->intval($d['idpedido']);
          $this->idpresupuesto = $this->intval($d['idpresupuesto']);
+         $this->idservicio = $this->intval($d['idservicio']);
          $this->idfacturaprov = $this->intval($d['idfacturaprov']);
          $this->idalbaranprov = $this->intval($d['idalbaranprov']);
          $this->idpedidoprov = $this->intval($d['idpedidoprov']);
@@ -75,6 +77,7 @@ class documento_factura extends fs_model
          $this->idalbaran = NULL;
          $this->idpedido = NULL;
          $this->idpresupuesto = NULL;
+         $this->idservicio = NULL;
          $this->idfacturaprov = NULL;
          $this->idalbaranprov = NULL;
          $this->idpedidoprov = NULL;
@@ -90,7 +93,7 @@ class documento_factura extends fs_model
    {
       if( !isset($this->file_exist) )
       {
-         $this->file_exist = file_exists($this->ruta);
+         $this->file_exist = file_exists(FS_MYDOCS.$this->ruta);
       }
       
       return $this->file_exist;
@@ -140,17 +143,18 @@ class documento_factura extends fs_model
                  .", idalbaran = ".$this->var2str($this->idalbaran)
                  .", idpedido = ".$this->var2str($this->idpedido)
                  .", idpresupuesto = ".$this->var2str($this->idpresupuesto)
+                 .", idservicio = ".$this->var2str($this->idservicio)
                  .", idfacturaprov = ".$this->var2str($this->idfacturaprov)
                  .", idalbaranprov = ".$this->var2str($this->idalbaranprov)
                  .", idpedidoprov = ".$this->var2str($this->idpedidoprov)
-                 ." WHERE id = ".$this->var2str($this->id).";";
+                 ."  WHERE id = ".$this->var2str($this->id).";";
          
          return $this->db->exec($sql);
       }
       else
       {
          $sql = "INSERT INTO documentosfac (ruta,nombre,fecha,hora,tamano,usuario,"
-                 . "idfactura,idalbaran,idpedido,idpresupuesto,idfacturaprov,"
+                 . "idfactura,idalbaran,idpedido,idpresupuesto,idservicio,idfacturaprov,"
                  . "idalbaranprov,idpedidoprov) VALUES (".$this->var2str($this->ruta)
                  . ",".$this->var2str($this->nombre)
                  . ",".$this->var2str($this->fecha)
@@ -161,6 +165,7 @@ class documento_factura extends fs_model
                  . ",".$this->var2str($this->idalbaran)
                  . ",".$this->var2str($this->idpedido)
                  . ",".$this->var2str($this->idpresupuesto)
+                 . ",".$this->var2str($this->idservicio)
                  . ",".$this->var2str($this->idfacturaprov)
                  . ",".$this->var2str($this->idalbaranprov)
                  . ",".$this->var2str($this->idpedidoprov).");";

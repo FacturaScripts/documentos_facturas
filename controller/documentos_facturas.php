@@ -26,6 +26,7 @@ require_model('factura_proveedor.php');
 require_model('pedido_cliente.php');
 require_model('pedido_proveedor.php');
 require_model('presupuesto_cliente.php');
+require_model('servicio_cliente.php');
 
 /**
  * Description of documentos_facturas
@@ -69,12 +70,12 @@ class documentos_facturas extends fs_controller
       {
          $nuevon = $this->random_string(6).'_'.$_FILES['fdocumento']['name'];
          
-         if( copy($_FILES['fdocumento']['tmp_name'], 'documentos/'.$nuevon) )
+         if( copy($_FILES['fdocumento']['tmp_name'], FS_MYDOCS.'documentos/'.$nuevon) )
          {
             $doc = new documento_factura();
             $doc->ruta = 'documentos/'.$nuevon;
             $doc->nombre = $_FILES['fdocumento']['name'];
-            $doc->tamano = filesize(getcwd().'/'.$doc->ruta);
+            $doc->tamano = filesize(getcwd().'/'.FS_MYDOCS.$doc->ruta);
             $doc->usuario = $this->user->nick;
             
             if($_GET['folder'] == 'facturascli')
@@ -105,6 +106,10 @@ class documentos_facturas extends fs_controller
             {
                $doc->idpedidoprov = $_GET['id'];
             }
+            else if($_GET['folder'] == 'servicioscli')
+            {
+               $doc->idservicio = $_GET['id'];
+            }
             
             if( $doc->save() )
             {
@@ -133,7 +138,7 @@ class documentos_facturas extends fs_controller
          if( $documento->delete() )
          {
             $this->new_message('Documento eliminado correctamente.');
-            @unlink($documento->ruta);
+            @unlink(FS_MYDOCS.$documento->ruta);
          }
          else
          {
@@ -180,6 +185,14 @@ class documentos_facturas extends fs_controller
               'type' => 'tab',
               'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
               'params' => '&folder=presupuestoscli'
+          ),
+          array(
+              'name' => 'documentos_servicioscli',
+              'page_from' => __CLASS__,
+              'page_to' => 'ventas_servicio',
+              'type' => 'tab',
+              'text' => '<span class="glyphicon glyphicon-file" aria-hidden="true" title="Documentos"></span>',
+              'params' => '&folder=servicioscli'
           ),
           array(
               'name' => 'documentos_facturasprov',
@@ -278,6 +291,10 @@ class documentos_facturas extends fs_controller
       {
          return $doc->all_from('idpresupuesto', $_GET['id']);
       }
+      else if($_GET['folder'] == 'servicioscli')
+      {
+         return $doc->all_from('idservicio', $_GET['id']);
+      }
       else if($_GET['folder'] == 'facturasprov')
       {
          /// comprobamos los albaranes relacionados con esta factura
@@ -323,9 +340,9 @@ class documentos_facturas extends fs_controller
    
    private function check_documentos()
    {
-      if( !file_exists('documentos') )
+      if( !file_exists(FS_MYDOCS.'documentos') )
       {
-         mkdir('documentos');
+         mkdir(FS_MYDOCS.'documentos');
       }
       
       if( isset($_GET['folder']) AND isset($_GET['id']) )
@@ -340,7 +357,7 @@ class documentos_facturas extends fs_controller
                {
                   /// movemos a la nueva ruta
                   $nuevon = $this->random_string(6).'_'.(string)$f;
-                  if( rename($folder.'/'.$f, 'documentos/'.$nuevon) )
+                  if( rename($folder.'/'.$f, FS_MYDOCS.'documentos/'.$nuevon) )
                   {
                      $doc = new documento_factura();
                      $doc->ruta = 'documentos/'.$nuevon;

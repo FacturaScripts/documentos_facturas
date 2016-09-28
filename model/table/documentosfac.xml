@@ -55,6 +55,10 @@
       <tipo>integer</tipo>
    </columna>
    <columna>
+      <nombre>idservicio</nombre>
+      <tipo>integer</tipo>
+   </columna>
+   <columna>
       <nombre>idfacturaprov</nombre>
       <tipo>integer</tipo>
    </columna>
