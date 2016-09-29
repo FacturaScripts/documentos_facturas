@@ -1,3 +1,4 @@
-Permite adjuntar archivos a facturas, albaranes, pedidos y presupuestos.
+Permite adjuntar archivos a facturas, albaranes, pedidos y presupuestos (de compra y de venta),
+así como a servicios a clientes.
 <br/>
 <b>Nota</b>: los archivos se guardan en el directorio documentos.
