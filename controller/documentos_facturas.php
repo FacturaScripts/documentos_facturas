@@ -62,6 +62,15 @@ class documentos_facturas extends fs_controller
          
          $this->documentos = $this->get_documentos();
       }
+      else
+      {
+         /**
+          * Nos aseguramos que la tabla se cree o se compruebe durante la instalación.
+          * En la instalación se cargan todos los controladores del plugin, como no hay
+          * parámetros, llega aquí.
+          */
+         $dofa = new documento_factura();
+      }
    }
    
    private function upload_documento()
