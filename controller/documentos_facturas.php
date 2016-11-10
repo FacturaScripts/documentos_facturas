@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of FacturaSctipts
+ * This file is part of FacturaScripts
  * Copyright (C) 2015-2016  Carlos Garcia Gomez  neorazorx@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -61,6 +61,7 @@ class documentos_facturas extends fs_controller
          }
          
          $this->documentos = $this->get_documentos();
+         $this->update_documento();
       }
       else
       {
@@ -394,6 +395,57 @@ class documentos_facturas extends fs_controller
                   }
                }
             }
+         }
+      }
+   }
+   
+   private function update_documento()
+   {
+      $numdocs = count($this->documentos);
+      
+      $documento = FALSE;
+      if($_GET['folder'] == 'facturascli')
+      {
+         $fact0 = new factura_cliente();
+         $documento = $fact0->get($_GET['id']);
+      }
+      else if($_GET['folder'] == 'albaranescli')
+      {
+         $alb0 = new albaran_cliente();
+         $documento = $alb0->get($_GET['id']);
+      }
+      else if($_GET['folder'] == 'pedidoscli')
+      {
+         $ped0 = new pedido_cliente();
+         $documento = $ped0->get($_GET['id']);
+      }
+      else if($_GET['folder'] == 'presupuestoscli')
+      {
+         $presu0 = new presupuesto_cliente();
+         $documento = $presu0->get($_GET['id']);
+      }
+      else if($_GET['folder'] == 'facturasprov')
+      {
+         $fact0 = new factura_proveedor();
+         $documento = $fact0->get($_GET['id']);
+      }
+      else if($_GET['folder'] == 'albaranesprov')
+      {
+         $alb0 = new albaran_proveedor();
+         $documento = $alb0->get($_GET['id']);
+      }
+      else if($_GET['folder'] == 'pedidosprov')
+      {
+         $ped0 = new pedido_proveedor();
+         $documento = $ped0->get($_GET['id']);
+      }
+      
+      if($documento)
+      {
+         if($numdocs != $documento->numdocs)
+         {
+            $documento->numdocs = $numdocs;
+            $documento->save();
          }
       }
    }
